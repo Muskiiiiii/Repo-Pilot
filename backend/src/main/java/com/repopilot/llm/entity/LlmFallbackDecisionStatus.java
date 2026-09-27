@@ -1,0 +1,12 @@
+package com.repopilot.llm.entity;
+
+public enum LlmFallbackDecisionStatus {
+    DECISION_INITIATED,
+    CAPACITY_RESERVED,
+    TARGET_ATTEMPT_CREATED,
+    EXECUTING_TARGET_ATTEMPT,
+    COMPLETED_SUCCESS,
+    COMPLETED_FAILED,
+    BLOCKED_POLICY,
+    RECONCILIATION_REQUIRED
+}

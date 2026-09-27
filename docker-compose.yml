@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: repopilot-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-repopilot}
+      POSTGRES_USER: ${POSTGRES_USER:-repopilot_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-repopilot_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-repopilot_user} -d ${POSTGRES_DB:-repopilot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: repopilot-redis
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: repopilot-backend
+    restart: always
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-repopilot}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-repopilot_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-repopilot_password}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      AI_SERVICE_URL: http://ai-service:8000
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_repopilot_must_be_at_least_256_bits_long_for_security_12345}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-placeholder}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-placeholder}
+      INDEXING_MAX_FILES_PER_REPO: 4000
+      INDEXING_EMBEDDING_MODEL: ${EMBEDDING_MODEL:-voyage-code-4}
+      INDEXING_EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSION:-1024}
+      INDEXING_BATCH_SIZE: 16
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/repopilot/workspaces:/tmp/repopilot/workspaces
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: repopilot-ai-service
+    restart: always
+    ports:
+      - "${AI_SERVICE_PORT:-8000}:8000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-repopilot_user}:${POSTGRES_PASSWORD:-repopilot_password}@postgres:5432/${POSTGRES_DB:-repopilot}
+      REDIS_URL: redis://redis:6379/0
+      LLM_API_KEY: ${LLM_API_KEY:-placeholder}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-voyage}
+      VOYAGE_API_KEY: ${VOYAGE_API_KEY:-placeholder}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-voyage-code-4}
+      EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-1024}
+      EMBEDDING_BATCH_SIZE: 16
+      EMBEDDING_MAX_BATCH_INPUTS: 16
+      EMBEDDING_MAX_BATCH_TOKENS: 3500
+      EMBEDDING_MAX_TOKENS_PER_MINUTE: 8000
+      EMBEDDING_MAX_REQUESTS_PER_MINUTE: 2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: repopilot-frontend
+    restart: always
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:

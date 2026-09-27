@@ -1,0 +1,12 @@
+package com.repopilot.llm.entity;
+
+public enum LlmBillingStatus {
+    UNBILLED,
+    BILLED,
+    BILLING_PENDING_PROVIDER,
+    BILLING_UNKNOWN,
+    BILLING_OVERAGE_REJECTED,
+    EXEMPT_NO_CHARGE,
+    BILLED_WITH_OVERAGE_LIABILITY,
+    RECONCILIATION_FAILED
+}

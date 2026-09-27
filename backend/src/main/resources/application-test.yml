@@ -1,0 +1,60 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:repopilot_testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;TIME ZONE=UTC;INIT=CREATE DOMAIN IF NOT EXISTS vector AS VARCHAR;
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+    properties:
+      hibernate:
+        session_factory:
+          statement_inspector: com.repopilot.review.TestSqlStatementInspector
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: false
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+management:
+  server:
+    port: 8081
+    address: 127.0.0.1
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+repopilot:
+  jwt:
+    secret: super_secret_jwt_key_repopilot_must_be_at_least_256_bits_long_for_security_12345
+    expiration-ms: 86400000
+  ai-service:
+    url: http://localhost:8000
