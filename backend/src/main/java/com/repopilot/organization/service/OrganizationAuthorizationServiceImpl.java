@@ -88,9 +88,14 @@ public class OrganizationAuthorizationServiceImpl implements OrganizationAuthori
             throw new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Authentication required");
         }
         List<OrganizationMember> memberships = organizationMemberRepository.findAllByUserIdWithOrganization(user.getId());
-        return memberships.stream()
+        List<Organization> orgs = memberships.stream()
                 .map(OrganizationMember::getOrganization)
                 .collect(Collectors.toList());
+        if (orgs.isEmpty()) {
+            organizationRepository.findById(com.repopilot.organization.config.DefaultOrganizationHolder.DEFAULT_ORG_ID)
+                    .ifPresent(orgs::add);
+        }
+        return orgs;
     }
 
     private int getRoleLevel(OrganizationRole role) {

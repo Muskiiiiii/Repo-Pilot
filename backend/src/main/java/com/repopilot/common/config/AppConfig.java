@@ -12,8 +12,8 @@ public class AppConfig {
     @Bean
     public RestTemplate restTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(2000); // 2.0 seconds connect timeout per attempt
-        factory.setReadTimeout(4000);    // 4.0 seconds socket read timeout per attempt
+        factory.setConnectTimeout(10000); // 10.0 seconds connect timeout
+        factory.setReadTimeout(180000);   // 180 seconds (3 mins) socket read timeout for AI embeddings & generation
         RestTemplate restTemplate = new RestTemplate(factory);
         restTemplate.getInterceptors().add(new W3CTraceContextClientHttpRequestInterceptor());
         return restTemplate;

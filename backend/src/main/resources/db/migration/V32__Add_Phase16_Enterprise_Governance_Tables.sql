@@ -125,7 +125,7 @@ WHERE a.task_id = t.id AND a.organization_id IS NULL;
 UPDATE audit_logs a
 SET organization_id = sub.org_id
 FROM (
-    SELECT user_id, MIN(organization_id) AS org_id
+    SELECT user_id, MIN(organization_id::text)::uuid AS org_id
     FROM organization_members
     GROUP BY user_id
     HAVING COUNT(DISTINCT organization_id) = 1

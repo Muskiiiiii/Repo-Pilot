@@ -200,7 +200,7 @@ export function HumanApprovalPublicationView({
             <Clock className="h-5 w-5 shrink-0 text-amber-400 animate-pulse" />
             <div>
               <span className="font-semibold">Publication status is being reconciled with GitHub...</span>
-              <p className="text-xs text-amber-300/80">Out-of-band remote verification in progress. Please click 'Refresh Status' to fetch updated state.</p>
+              <p className="text-xs text-amber-300/80">Out-of-band remote verification in progress. Please click &apos;Refresh Status&apos; to fetch updated state.</p>
             </div>
           </div>
         )}
@@ -264,7 +264,7 @@ export function HumanApprovalPublicationView({
             </div>
           ) : (
             <div className="flex h-32 items-center justify-center text-xs text-slate-400">
-              No approval record exists for this code change yet. Click 'Approve Change' to inspect and approve.
+              No approval record exists for this code change yet. Click &apos;Approve Change&apos; to inspect and approve.
             </div>
           )}
         </Card>

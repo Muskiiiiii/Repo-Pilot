@@ -1,6 +1,7 @@
 -- V36__Create_Phase16_5_Audit_Export_Tables.sql
 
 -- 1. Main Audit Export Jobs Table
+DROP TABLE IF EXISTS audit_export_jobs CASCADE;
 CREATE TABLE audit_export_jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,

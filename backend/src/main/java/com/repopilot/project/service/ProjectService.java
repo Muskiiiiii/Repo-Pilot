@@ -28,6 +28,7 @@ public class ProjectService {
     private final ProjectAuthorizationService authorizationService;
     private final AuditLogService auditLogService;
     private final com.repopilot.organization.repository.OrganizationRepository organizationRepository;
+    private final com.repopilot.organization.repository.OrganizationMemberRepository organizationMemberRepository;
     private final com.repopilot.organization.service.OrganizationAuthorizationService organizationAuthorizationService;
 
     public ProjectService(ProjectRepository projectRepository,
@@ -38,6 +39,7 @@ public class ProjectService {
                           ProjectAuthorizationService authorizationService,
                           AuditLogService auditLogService,
                           com.repopilot.organization.repository.OrganizationRepository organizationRepository,
+                          com.repopilot.organization.repository.OrganizationMemberRepository organizationMemberRepository,
                           com.repopilot.organization.service.OrganizationAuthorizationService organizationAuthorizationService) {
         this.projectRepository = projectRepository;
         this.projectMemberRepository = projectMemberRepository;
@@ -47,6 +49,7 @@ public class ProjectService {
         this.authorizationService = authorizationService;
         this.auditLogService = auditLogService;
         this.organizationRepository = organizationRepository;
+        this.organizationMemberRepository = organizationMemberRepository;
         this.organizationAuthorizationService = organizationAuthorizationService;
     }
 
@@ -63,12 +66,11 @@ public class ProjectService {
             org = organizationAuthorizationService.getAuthorizedOrganization(request.getOrganizationId(), currentUser);
         } else {
             List<com.repopilot.organization.entity.Organization> userOrgs = organizationAuthorizationService.getUserOrganizations(currentUser);
-            if (userOrgs.size() == 1) {
+            if (!userOrgs.isEmpty()) {
                 org = userOrgs.get(0);
-            } else if (userOrgs.isEmpty()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "ORGANIZATION_REQUIRED", "User does not belong to any organization. Please specify an organization for project creation.");
             } else {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "ORGANIZATION_REQUIRED", "User belongs to multiple organizations. Please specify organizationId explicitly.");
+                org = organizationRepository.findById(com.repopilot.organization.config.DefaultOrganizationHolder.DEFAULT_ORG_ID)
+                        .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "ORGANIZATION_REQUIRED", "User does not belong to any organization. Please specify an organization for project creation."));
             }
         }
         project.setOrganization(org);
@@ -79,9 +81,13 @@ public class ProjectService {
         ProjectMember ownerMember = new ProjectMember(savedProject, currentUser, ProjectRole.OWNER);
         projectMemberRepository.save(ownerMember);
 
-        // Automatically add owner as ORG_MEMBER if not already present
-        if (!org.getId().equals(UUID.fromString("00000000-0000-0000-0000-000000000001"))) {
-            // Already validated organization membership
+        // Automatically add owner as ORG_MEMBER in the organization if not already present
+        if (!organizationMemberRepository.existsByOrganizationIdAndUserId(org.getId(), currentUser.getId())) {
+            organizationMemberRepository.save(new com.repopilot.organization.entity.OrganizationMember(
+                    org,
+                    currentUser,
+                    com.repopilot.organization.entity.OrganizationRole.ORG_ADMIN
+            ));
         }
 
         // Record audit log

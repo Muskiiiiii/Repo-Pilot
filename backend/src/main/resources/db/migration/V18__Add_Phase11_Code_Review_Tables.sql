@@ -1,5 +1,6 @@
 -- Flyway Migration V18: Phase 11 Code Review & Security Analysis Schema
 
+DROP TABLE IF EXISTS code_reviews CASCADE;
 CREATE TABLE IF NOT EXISTS code_reviews (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
