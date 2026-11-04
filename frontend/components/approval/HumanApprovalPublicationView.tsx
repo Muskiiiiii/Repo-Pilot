@@ -103,7 +103,7 @@ export function HumanApprovalPublicationView({
 
   const isPrCreated = currentPublicationStatus === 'PR_CREATED' || currentPublicationStatus === 'PR_RECONCILED';
   const isUnknownState = currentPublicationStatus === 'FAILED_PUSH' && publicationResult?.failureCategory === 'UNKNOWN_EXTERNAL_STATE' ||
-                         currentPublicationStatus === 'FAILED_PR_CREATION' && publicationResult?.failureCategory === 'UNKNOWN_EXTERNAL_STATE';
+    currentPublicationStatus === 'FAILED_PR_CREATION' && publicationResult?.failureCategory === 'UNKNOWN_EXTERNAL_STATE';
   const isConflictState = currentPublicationStatus === 'FAILED_CONFLICT' || currentPublicationStatus === 'FAILED_PR_CONFLICT';
 
   const handleConfirmApprove = async () => {
@@ -281,7 +281,7 @@ export function HumanApprovalPublicationView({
                 {publicationResult.status}
               </Badge>
             ) : (
-              <Badge variant="neutral">NOT PUBLISHED</Badge>
+              <Badge variant="default">NOT PUBLISHED</Badge>
             )}
           </div>
 

@@ -88,7 +88,8 @@ RepoPilot/
 │   ├── 03-ui-ux-design.md
 │   ├── 04-system-architecture.md
 │   ├── IMPLEMENTATION_PLAN.md
-│   └── ARCHITECTURE_DECISIONS.md
+│   ├── ARCHITECTURE_DECISIONS.md
+│   └── LANGGRAPH_WORKFLOW.md   # LangGraph Agentic Workflow Specification & Integration
 ├── frontend/                 # Next.js 14 + TypeScript + Tailwind CSS UI
 ├── backend/                  # Spring Boot 3 Java Backend
 ├── ai-service/               # Python FastAPI + LangGraph AI Service

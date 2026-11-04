@@ -10,6 +10,7 @@ from app.api.routes.planning import router as planning_router
 from app.api.routes.testing import router as testing_router
 from app.api.routes.review import router as review_router
 from app.api.routes.report import router as report_router
+from app.api.routes.workflow import router as workflow_router
 
 # Configure structured logging
 logging.basicConfig(
@@ -35,6 +36,7 @@ app.include_router(planning_router)
 app.include_router(testing_router)
 app.include_router(review_router)
 app.include_router(report_router)
+app.include_router(workflow_router)
 
 # Add Telemetry Middleware & CORS
 app.add_middleware(W3CTraceContextMiddleware)

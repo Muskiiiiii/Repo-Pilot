@@ -34,12 +34,12 @@ backend/.classpath
 backend/.project
 
 # Python
-ai-service/__pycache__/
-ai-service/*/__pycache__/
-ai-service/*/*/__pycache__/
-ai-service/*.pyc
-ai-service/.pytest_cache/
-ai-service/.venv/
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*.pyc
+.pytest_cache/
+ai-service/.venv*/
 ai-service/venv/
 ai-service/env/
 ai-service/.env

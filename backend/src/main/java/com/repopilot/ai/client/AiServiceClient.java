@@ -21,4 +21,8 @@ public interface AiServiceClient {
 
     ReviewResponseDto executeCodeReview(ReviewContext context);
     ReportSynthesisOutputDto synthesizeReport(ReportSynthesisInputDto inputDto);
+
+    Map<String, Object> executeWorkflow(Map<String, Object> payload);
+    Map<String, Object> resumeWorkflow(Map<String, Object> payload);
+    Map<String, Object> getWorkflowStatus(String taskId);
 }

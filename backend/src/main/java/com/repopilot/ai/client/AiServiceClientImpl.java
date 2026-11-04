@@ -591,4 +591,82 @@ public class AiServiceClientImpl implements AiServiceClient {
             throw new ApiException(HttpStatus.BAD_GATEWAY, "LLM_MALFORMED_OUTPUT", "Developer notes count exceeds maximum limit 10");
         }
     }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> executeWorkflow(Map<String, Object> payload) {
+        String endpoint = aiServiceUrl + "/api/v1/workflow/run";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        if (internalServiceSecret != null && !internalServiceSecret.isBlank()) {
+            headers.set("X-Internal-Service-Key", internalServiceSecret);
+        }
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(endpoint, HttpMethod.POST, entity, Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return (Map<String, Object>) response.getBody();
+            }
+        } catch (Exception e) {
+            logger.error("AI Service executeWorkflow failed: {}", e.getMessage(), e);
+            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "AI_SERVICE_WORKFLOW_FAILED",
+                    "Failed to execute LangGraph workflow: " + e.getMessage(), e);
+        }
+        throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "AI_SERVICE_EMPTY_RESPONSE",
+                "AI Service executeWorkflow returned empty response");
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> resumeWorkflow(Map<String, Object> payload) {
+        String endpoint = aiServiceUrl + "/api/v1/workflow/resume";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        if (internalServiceSecret != null && !internalServiceSecret.isBlank()) {
+            headers.set("X-Internal-Service-Key", internalServiceSecret);
+        }
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(endpoint, HttpMethod.POST, entity, Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return (Map<String, Object>) response.getBody();
+            }
+        } catch (Exception e) {
+            logger.error("AI Service resumeWorkflow failed: {}", e.getMessage(), e);
+            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "AI_SERVICE_RESUME_FAILED",
+                    "Failed to resume LangGraph workflow: " + e.getMessage(), e);
+        }
+        throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "AI_SERVICE_EMPTY_RESPONSE",
+                "AI Service resumeWorkflow returned empty response");
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getWorkflowStatus(String taskId) {
+        String endpoint = aiServiceUrl + "/api/v1/workflow/status/" + taskId;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        if (internalServiceSecret != null && !internalServiceSecret.isBlank()) {
+            headers.set("X-Internal-Service-Key", internalServiceSecret);
+        }
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(endpoint, HttpMethod.GET, entity, Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return (Map<String, Object>) response.getBody();
+            }
+        } catch (Exception e) {
+            logger.error("AI Service getWorkflowStatus failed for task {}: {}", taskId, e.getMessage(), e);
+            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "AI_SERVICE_STATUS_FAILED",
+                    "Failed to get LangGraph workflow status: " + e.getMessage(), e);
+        }
+        throw new ApiException(HttpStatus.NOT_FOUND, "WORKFLOW_NOT_FOUND",
+                "No workflow state found for task " + taskId);
+    }
 }
